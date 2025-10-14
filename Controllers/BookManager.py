@@ -24,7 +24,7 @@ class BookManager():
 		return books
 
 	def search(self, keyword, availability=1):
-		books = self.dao.search_book(keyword, availability)
+		books = self.dao.search_hbook(keyword, availability)
 
 		return books
 
