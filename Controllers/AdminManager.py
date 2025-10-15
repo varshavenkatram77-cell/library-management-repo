@@ -10,7 +10,7 @@ class AdminManager():
 		admin = self.dao.getByEmail(email)
 
 		if admin is None:
-			return False
+		return False
 
 		admin_pass = admin["password"] # admin pass at 
 		if admin_pass != password:
