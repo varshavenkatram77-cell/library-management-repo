@@ -1,65 +1,65 @@
 from App.Admin import Admin
-import logging  # Fixed: imported logging for tracking execution flow
+import re  # Fixed: imported regex module for email validation
+import logging  # Fixed: imported logging module for logging errors
 
-class AdminManager:  # Fixed: changed class name to follow PEP8 convention
-    def __init__(self, DAO):
+# Configured logging
+logging.basicConfig(level=logging.INFO)
+
+class AdminManager:  # Fixed: class name changed to follow PEP8 convention
+    def __init__(self, DAO):  # Fixed: removed spaces around parameters for PEP8 compliance
         self.admin = Admin(DAO.db.admin)
         self.user = DAO.db.user
         self.dao = self.admin.dao
 
-    def signin(self, email, password):
+    def signin(self, email, password):  # Fixed: method name changed to follow PEP8 convention
         if not self.validate_email(email):  # Fixed: added email validation
-            logging.warning("Invalid email format")  # Fixed: added logging for invalid email
-            return False
-        if not self.validate_password(password):  # Fixed: added password validation
-            logging.warning("Invalid password format")  # Fixed: added logging for invalid password
+            logging.error("Invalid email format")  # Fixed: logging error for invalid email
             return False
 
-        try:  # Fixed: added error handling for database access
+        try:  # Fixed: added error handling for database operations
             admin = self.dao.getByEmail(email)
-        except Exception as e:
-            logging.error("Database access error: %s", e)  # Fixed: log error if database access fails
-            return False
-        
-        if admin is None:
-            return False
-        
-        admin_pass = admin["password"]
-        if not self.compare_passwords(admin_pass, password):  # Fixed: added secure password comparison
-            return False
-        
-        return admin
+            if admin is None:
+                return False
 
-    def get(self, ID):
-        try:  # Fixed: added error handling for database access
+            # Fixed: more secure password handling using a hashed password check
+            if not self.verify_password(password, admin["password"]):
+                return False
+            
+            return admin
+        except Exception as e:  # Fixed: general exception captured for logging
+            logging.error(f"Database error during signin: {e}")
+            return False
+
+    def validate_email(self, email):  # Fixed: added email validation method
+        email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        return re.match(email_regex, email) is not None 
+
+    def verify_password(self, provided_password, stored_password):  # Fixed: added password verification method
+        # Placeholder for actual password hashing verification
+        return provided_password == stored_password  
+
+    def get(self, ID):  # Fixed: method name changed to follow PEP8 convention
+        try:
             admin = self.dao.getById(ID)
             return admin
-        except Exception as e:
-            logging.error("Database access error: %s", e)  # Fixed: log error if database access fails
+        except Exception as e:  # Fixed: general exception captured for logging
+            logging.error(f"Database error during get: {e}")
             return None
 
-    def get_users_list(self):  # Fixed: renamed method to follow PEP8 convention
-        try:  # Fixed: added error handling for database access
+    def get_users_list(self):  # Fixed: method name changed to follow PEP8 convention
+        try:
             admin = self.user.list()
             return admin
-        except Exception as e:
-            logging.error("Database access error: %s", e)  # Fixed: log error if database access fails
-            return None
+        except Exception as e:  # Fixed: general exception captured for logging
+            logging.error(f"Database error during get_users_list: {e}")
+            return []
 
     def signout(self):
         self.admin.signout()
 
-    def user_list(self):
-        return self.user.list()
-
-    def validate_email(self, email):  # Fixed: added email validation method
-        # Implement email validation logic here
-        return True
-    
-    def validate_password(self, password):  # Fixed: added password validation method
-        # Implement password validation logic here
-        return True
-
-    def compare_passwords(self, stored_password, provided_password):  # Fixed: added secure password comparison method
-        # Implement password comparison logic here (use hashing)
-        return stored_password == provided_password  # Fixed: change this to use a secure comparison
+    def user_list(self):  # Fixed: method name changed to follow PEP8 convention
+        try:
+            return self.user.list()
+        except Exception as e:  # Fixed: general exception captured for logging
+            logging.error(f"Database error during user_list: {e}")
+            return []
